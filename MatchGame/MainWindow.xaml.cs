@@ -31,28 +31,44 @@ namespace MatchGame
         TextBlock lastTextBlockClicked;
         bool findingMatch = false;
         int hpCounts; // to check that all the animals are matched and are set to hidden.
+
+        // variables for SetupGame()
+        Random hpRandom = new Random();
+        double prevBestTime;
+        double currElapsedTime;
+
         public MainWindow()
         {
             InitializeComponent();
 
             timer.Interval = TimeSpan.FromSeconds(0.1);
-            timer.Tick += dispatcherTimer_Tick;
+            timer.Tick += timer_Tick;
             SetUpGame();
         }
 
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
+        private void timer_Tick(object sender, EventArgs e)
         {
             tenthsOfSecondsElapsed++;
-            timerTextBlock.Text = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
+            //timerTextBlock.Text = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
             if (matchesFound == 8)
             {
                 timer.Stop();
                 timerTextBlock.Text += " - Play Again?";
+                return;
             }
+            
+            currElapsedTime = Math.Round((tenthsOfSecondsElapsed / 10F), 1);
+            timerTextBlock.Text = currElapsedTime + "s";
         }
 
         protected void SetUpGame()
         {
+            int[] animalGroupsStartNum = new int[] { 0, 16, 32, 48 };
+            //string[] animalGroups = new string[] { "0-48", "16-32", "32-16", "48-0" };
+            //int[] animalGrpsLastNum = new int[] { 48, 32, 16, 0 };
+            int[] animalGrpsLastNum = new int[animalGroupsStartNum.Length];
+            Array.Copy(animalGroupsStartNum, animalGrpsLastNum, animalGroupsStartNum.Length);
+            Array.Reverse(animalGrpsLastNum);
             List<string> animalEmoji = new List<string>()
             {
                 "😹","😹",
@@ -62,18 +78,51 @@ namespace MatchGame
                 "🐨","🐨",
                 "🐘","🐘",
                 "🐇","🐇",
-                "🐪","🐪"
+                "🐪","🐪",
+
+                "🐱‍🏍","🐱‍🏍",
+                "🐵","🐵",
+                "🐶","🐶",
+                "🦒","🦒",
+                "🦝","🦝",
+                "🐰","🐰",
+                "🐻","🐻",
+                "🐸","🐸",
+
+                "🦓","🦓",
+                "🐴","🐴",
+                "🐔","🐔",
+                "🐲","🐲",
+                "🐒","🐒",
+                "🦍","🦍",
+                "🐕‍🦺","🐕‍🦺",
+                "🦌","🦌",
+                
+                "🐎","🐎",
+                "🐬","🐬",
+                "🐢","🐢",
+                "🐋","🐋",
+                "🦔","🦔",
+                "🐿","🐿",
+                "🦖","🦖",
+                "🦏","🦏"
             };
 
             Random random = new Random();
             int usableTxtBlocksCnt = 0;
-            foreach(TextBlock txtBlock in animalGrid.Children.OfType<TextBlock>())
+            int emojiGroupIndex = hpRandom.Next(animalGroupsStartNum.Count());
+            int randomMinVal = animalGroupsStartNum[emojiGroupIndex];
+            int randomMaxVal;
+            foreach (TextBlock txtBlock in animalGrid.Children.OfType<TextBlock>())
             {
                 usableTxtBlocksCnt += 1;
                 //if (txtBlock.Name != "timerTextBlock") // Working
-                if (usableTxtBlocksCnt <= animalGrid.Children.OfType<TextBlock>().Count() - 1)
+                if (usableTxtBlocksCnt <= animalGrid.Children.OfType<TextBlock>().Count() - 2)
                 {
-                    int index = random.Next(animalEmoji.Count);
+                    //int index = random.Next(animalEmoji.Count);
+                    //int index = random.Next(0, animalEmoji.Count - 15);
+                    randomMaxVal = (emojiGroupIndex == animalGroupsStartNum.Count() - 1) ? animalEmoji.Count : animalEmoji.Count - (animalGrpsLastNum[emojiGroupIndex]);
+                    int index = random.Next(randomMinVal, randomMaxVal);
                     string nextEmoji = animalEmoji[index];
                     txtBlock.Text = nextEmoji;
                     txtBlock.Visibility = Visibility.Visible;
@@ -116,9 +165,25 @@ namespace MatchGame
                 }
             }
 
-            if (hpCounts == animalGrid.Children.OfType<TextBlock>().Count()-1)
+            if (hpCounts == animalGrid.Children.OfType<TextBlock>().Count()-2)
             {
-                MessageBox.Show("Congrats! You have matched all the animal pairs.");
+                string hpMessage = "Congrats! You have matched all the animal pairs.";
+                //
+                if (prevBestTime == 0)
+                {
+                    prevBestTime = currElapsedTime;
+                }
+                else if (prevBestTime > currElapsedTime)
+                {
+                    hpMessage = "Congrats! You have matched all the animal pairs in less than previous time.";
+                    prevBestTime = currElapsedTime;
+                }
+                else if (prevBestTime == currElapsedTime)
+                {
+                    hpMessage = "Congrats! You have matched all the animal pairs in equal of previous time.";
+                }
+                bestTimeTextBlock.Text = $"Best Time: {prevBestTime.ToString("0.0s")}";
+                MessageBox.Show(hpMessage,"Info!");
             }
         }
 
