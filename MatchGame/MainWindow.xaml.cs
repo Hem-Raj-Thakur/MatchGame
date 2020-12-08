@@ -26,6 +26,7 @@ namespace MatchGame
         DispatcherTimer timer = new DispatcherTimer();
         int tenthsOfSecondsElapsed;
         int matchesFound;
+        int totalCountDownTime = 120;
 
         // variables for TextBlock_MouseDown() method
         TextBlock lastTextBlockClicked;
@@ -48,7 +49,8 @@ namespace MatchGame
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            tenthsOfSecondsElapsed++;
+            //tenthsOfSecondsElapsed++;
+            tenthsOfSecondsElapsed--;
             //timerTextBlock.Text = (tenthsOfSecondsElapsed / 10F).ToString("0.0s");
             if (matchesFound == 8)
             {
@@ -59,10 +61,13 @@ namespace MatchGame
             
             currElapsedTime = Math.Round((tenthsOfSecondsElapsed / 10F), 1);
             timerTextBlock.Text = currElapsedTime + "s";
+            // added for count down in place of up (++)
+            currElapsedTime = totalCountDownTime - currElapsedTime;
         }
 
         protected void SetUpGame()
         {
+            Brush[] brushes = new Brush[] { Brushes.DarkRed, Brushes.Navy, Brushes.ForestGreen, Brushes.DarkSlateBlue };
             int[] animalGroupsStartNum = new int[] { 0, 16, 32, 48 };
             //string[] animalGroups = new string[] { "0-48", "16-32", "32-16", "48-0" };
             //int[] animalGrpsLastNum = new int[] { 48, 32, 16, 0 };
@@ -126,12 +131,13 @@ namespace MatchGame
                     string nextEmoji = animalEmoji[index];
                     txtBlock.Text = nextEmoji;
                     txtBlock.Visibility = Visibility.Visible;
-                    txtBlock.Foreground = Brushes.Navy;
+                    txtBlock.Foreground = brushes[emojiGroupIndex]; //Brushes.Navy;
                     animalEmoji.RemoveAt(index);
                 }
             }
             timer.Start();
-            tenthsOfSecondsElapsed = 0;
+            //tenthsOfSecondsElapsed = 0;
+            tenthsOfSecondsElapsed = totalCountDownTime * 10; // * 10 because it will devide it by 10
             matchesFound = 0;
         }
 
